@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { PDFDocumentLoadingTask, PDFDocumentProxy, RenderTask } from 'pdfjs-dist';
 
 import { PDF_PATH, PDF_TITLE } from '../pdf-viewer/pdf-config';
@@ -82,7 +82,7 @@ function PdfPageCanvas({ document, pageNumber, width }: PdfPageCanvasProps) {
   }, [document, pageNumber, width]);
 
   return (
-    <figure className={styles.page}>
+    <figure className={styles.page} style={{ width }}>
       <canvas ref={canvasRef} className={styles.canvas} aria-label={`Page ${pageNumber}`} />
       {status ? <figcaption className={styles.pageStatus}>{status}</figcaption> : null}
     </figure>
@@ -97,7 +97,7 @@ export function PdfJsViewerSheet() {
   const [pageWidth, setPageWidth] = useState(0);
   const pageNumbers = Array.from({ length: pdfDocument?.numPages ?? 0 }, (_, index) => index + 1);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!open) {
       return;
     }
@@ -109,7 +109,13 @@ export function PdfJsViewerSheet() {
     }
 
     const updateWidth = () => {
-      setPageWidth(Math.max(0, Math.floor(viewer.clientWidth - 24)));
+      const style = window.getComputedStyle(viewer);
+      const paddingLeft = Number.parseFloat(style.paddingLeft) || 0;
+      const paddingRight = Number.parseFloat(style.paddingRight) || 0;
+      const padding = paddingLeft + paddingRight;
+      const width = Math.max(0, Math.floor(viewer.clientWidth - padding));
+
+      setPageWidth(width);
     };
 
     updateWidth();
@@ -166,6 +172,11 @@ export function PdfJsViewerSheet() {
     };
   }, [open]);
 
+  const hasMeasuredPageWidth = pageWidth > 0;
+  const shouldShowDocumentPlaceholder = open && hasMeasuredPageWidth && !pdfDocument;
+  const shouldShowStatusFallback = open && !hasMeasuredPageWidth && documentStatus;
+  const shouldRenderPages = open && pdfDocument && hasMeasuredPageWidth;
+
   return (
     <PdfSheetChrome
       triggerLabel="View pdf with PDF.js"
@@ -176,9 +187,19 @@ export function PdfJsViewerSheet() {
       onOpenChange={setOpen}
       sheetClassName={styles.sheet}
     >
-      {documentStatus ? <p className={styles.documentStatus}>{documentStatus}</p> : null}
+      {shouldShowDocumentPlaceholder ? (
+        <figure className={styles.pagePlaceholder} style={{ width: pageWidth }}>
+          {documentStatus ? (
+            <figcaption className={styles.pageStatus}>{documentStatus}</figcaption>
+          ) : null}
+        </figure>
+      ) : null}
 
-      {open && pdfDocument && pageWidth
+      {shouldShowStatusFallback ? (
+        <p className={styles.documentStatus}>{documentStatus}</p>
+      ) : null}
+
+      {shouldRenderPages
         ? pageNumbers.map((pageNumber) => (
             <PdfPageCanvas
               key={pageNumber}
