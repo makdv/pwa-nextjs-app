@@ -17,7 +17,7 @@
     "@alfalab/core-config": "^1.0.0",
     "@alfalab/stack-context": "^1.16.0",
     "classnames": "^2.5.1",
-    "next": "15.0.3",
+    "next": "15.0.7",
     "pdfjs-dist": "^6.0.227",
     "react": "19.0.0",
     "react-dom": "19.0.0"
