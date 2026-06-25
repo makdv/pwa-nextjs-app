@@ -19,7 +19,8 @@
   line-height: 22px;
 }
 
-.page {
+.page,
+.pagePlaceholder {
   position: relative;
   width: fit-content;
   max-width: 100%;
@@ -27,6 +28,10 @@
   margin: 0 auto 12px;
   background: #ffffff;
   box-shadow: 0 3px 18px rgba(17, 24, 39, 0.18);
+}
+
+.pagePlaceholder {
+  aspect-ratio: 1 / 1.414;
 }
 
 .page:last-child {
