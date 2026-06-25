@@ -5,6 +5,7 @@ import Link from 'next/link';
 
 import { SetupWorker } from '../components/setup-worker';
 import { PdfViewerSheet } from '../components/pdf-viewer-sheet';
+import { PdfJsViewerSheet } from '../components/pdf-js-viewer-sheet';
 import styles from './page.module.css';
 
 export default function Home() {
@@ -24,6 +25,7 @@ export default function Home() {
         <div className={styles.ctas}>
           <div className={styles.linkStack}>
             <PdfViewerSheet />
+            <PdfJsViewerSheet />
             <Link className={styles.secondary} href={'/side-panel'}>
               Side Panel
             </Link>

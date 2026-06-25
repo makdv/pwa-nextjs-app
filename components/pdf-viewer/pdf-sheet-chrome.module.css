@@ -1,0 +1,152 @@
+.viewButton {
+  appearance: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 180px;
+  height: 48px;
+  border: 1px solid transparent;
+  border-radius: 128px;
+  padding: 0 20px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 20px;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.primaryButton {
+  border-color: var(--foreground);
+  background: var(--foreground);
+  color: var(--background);
+}
+
+.secondaryButton {
+  border-color: var(--gray-alpha-200, rgba(0, 0, 0, 0.08));
+  background: transparent;
+  color: var(--foreground);
+}
+
+.sheet {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: calc(100svh - env(safe-area-inset-top));
+  min-height: 520px;
+  overflow: hidden;
+  background: #ffffff;
+  color-scheme: light;
+}
+
+.toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: minmax(72px, 1fr) auto minmax(72px, 1fr);
+  align-items: center;
+  gap: 12px;
+  min-height: 60px;
+  padding: 8px 18px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(16px);
+  color: #171717;
+}
+
+.title {
+  overflow: hidden;
+  font-size: 18px;
+  font-weight: 650;
+  line-height: 24px;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.textButton,
+.iconButton {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: #1473e6;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.textButton {
+  justify-self: start;
+  min-width: 64px;
+  min-height: 44px;
+  font-size: 17px;
+  text-align: left;
+}
+
+.iconButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  justify-self: end;
+  width: 44px;
+  height: 44px;
+}
+
+.iconButton:disabled {
+  cursor: wait;
+  opacity: 0.45;
+}
+
+.shareIcon {
+  display: block;
+  width: 28px;
+  height: 28px;
+  background: currentColor;
+  mask: url('https://alfabank.servicecdn.ru/icons/glyph_share_m.svg') center / contain no-repeat;
+  -webkit-mask: url('https://alfabank.servicecdn.ru/icons/glyph_share_m.svg') center / contain no-repeat;
+}
+
+.content {
+  flex: 1;
+  min-height: 0;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+}
+
+.shareStatus {
+  position: absolute;
+  right: 16px;
+  bottom: calc(16px + env(safe-area-inset-bottom));
+  max-width: calc(100% - 32px);
+  border-radius: 999px;
+  padding: 8px 12px;
+  background: rgba(23, 23, 23, 0.82);
+  color: #ffffff;
+  font-size: 13px;
+  line-height: 18px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .primaryButton:hover {
+    background: var(--button-primary-hover);
+    border-color: transparent;
+  }
+
+  .secondaryButton:hover {
+    background: var(--button-secondary-hover, #f2f2f2);
+    border-color: transparent;
+  }
+}
+
+@media (max-width: 600px) {
+  .viewButton {
+    min-width: auto;
+    height: 40px;
+    padding: 0 16px;
+    font-size: 14px;
+  }
+
+  .toolbar {
+    padding-inline: 14px;
+  }
+}

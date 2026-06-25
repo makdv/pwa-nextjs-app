@@ -1,0 +1,59 @@
+.sheet {
+  background: #f3f4f6;
+}
+
+.viewer {
+  overflow: auto;
+  padding: 12px;
+  background: #f3f4f6;
+  -webkit-overflow-scrolling: touch;
+}
+
+.documentStatus {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 180px;
+  color: #4b5563;
+  font-size: 15px;
+  line-height: 22px;
+}
+
+.page {
+  position: relative;
+  width: fit-content;
+  max-width: 100%;
+  min-height: 180px;
+  margin: 0 auto 12px;
+  background: #ffffff;
+  box-shadow: 0 3px 18px rgba(17, 24, 39, 0.18);
+}
+
+.page:last-child {
+  margin-bottom: 0;
+}
+
+.canvas {
+  display: block;
+  max-width: 100%;
+  background: #ffffff;
+}
+
+.pageStatus {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  color: #6b7280;
+  font-size: 14px;
+  line-height: 20px;
+  text-align: center;
+}
+
+@media (max-width: 600px) {
+  .viewer {
+    padding: 10px;
+  }
+}
