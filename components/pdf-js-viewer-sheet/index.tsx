@@ -1,7 +1,12 @@
 'use client';
 
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import type { PDFDocumentLoadingTask, PDFDocumentProxy, RenderTask } from 'pdfjs-dist';
+import type {
+  PDFDocumentLoadingTask,
+  PDFDocumentProxy,
+  RenderTask,
+  TextLayer as PdfTextLayer,
+} from 'pdfjs-dist';
 
 import { PDF_PATH, PDF_TITLE } from '../pdf-viewer/pdf-config';
 import { PdfSheetChrome } from '../pdf-viewer/pdf-sheet-chrome';
@@ -15,11 +20,21 @@ type PdfPageCanvasProps = {
 
 function PdfPageCanvas({ document, pageNumber, width }: PdfPageCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const textLayerContainerRef = useRef<HTMLDivElement>(null);
   const renderTaskRef = useRef<RenderTask | null>(null);
+  const textLayerRef = useRef<PdfTextLayer | null>(null);
   const [status, setStatus] = useState('Loading page');
 
   useEffect(() => {
     if (!width) {
+      return;
+    }
+
+    const canvas = canvasRef.current;
+    const context = canvas?.getContext('2d');
+    const textLayerContainer = textLayerContainerRef.current;
+
+    if (!canvas || !context || !textLayerContainer) {
       return;
     }
 
@@ -30,16 +45,17 @@ function PdfPageCanvas({ document, pageNumber, width }: PdfPageCanvasProps) {
 
       try {
         renderTaskRef.current?.cancel();
+        textLayerRef.current?.cancel();
+        textLayerContainer.replaceChildren();
 
+        const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs');
         const page = await document.getPage(pageNumber);
         const unscaledViewport = page.getViewport({ scale: 1 });
         const outputScale = Math.min(window.devicePixelRatio || 1, 2);
         const scale = width / unscaledViewport.width;
         const viewport = page.getViewport({ scale });
-        const canvas = canvasRef.current;
-        const context = canvas?.getContext('2d');
 
-        if (!canvas || !context || !active) {
+        if (!active) {
           return;
         }
 
@@ -48,22 +64,40 @@ function PdfPageCanvas({ document, pageNumber, width }: PdfPageCanvasProps) {
         canvas.style.width = `${Math.floor(viewport.width)}px`;
         canvas.style.height = `${Math.floor(viewport.height)}px`;
 
-        context.setTransform(outputScale, 0, 0, outputScale, 0, 0);
+        textLayerContainer.style.width = `${Math.floor(viewport.width)}px`;
+        textLayerContainer.style.height = `${Math.floor(viewport.height)}px`;
+        textLayerContainer.style.setProperty('--total-scale-factor', `${viewport.scale * viewport.userUnit}`);
+        textLayerContainer.style.setProperty('--scale-factor', `${viewport.scale}`);
+        textLayerContainer.style.setProperty('--user-unit', `${viewport.userUnit}`);
+        textLayerContainer.style.setProperty('--scale-round-x', '1px');
+        textLayerContainer.style.setProperty('--scale-round-y', '1px');
 
         const renderTask = page.render({
           canvas,
-          canvasContext: context,
+          transform: outputScale !== 1 ? [outputScale, 0, 0, outputScale, 0, 0] : undefined,
+          viewport,
+        });
+        const textLayer = new pdfjs.TextLayer({
+          container: textLayerContainer,
+          textContentSource: page.streamTextContent({
+            disableNormalization: true,
+            includeMarkedContent: true,
+          }),
           viewport,
         });
 
         renderTaskRef.current = renderTask;
-        await renderTask.promise;
+        textLayerRef.current = textLayer;
+        await Promise.all([renderTask.promise, textLayer.render()]);
 
         if (active) {
           setStatus('');
         }
       } catch (error) {
-        if (error instanceof Error && error.name === 'RenderingCancelledException') {
+        if (
+          error instanceof Error &&
+          (error.name === 'AbortException' || error.name === 'RenderingCancelledException')
+        ) {
           return;
         }
 
@@ -78,12 +112,15 @@ function PdfPageCanvas({ document, pageNumber, width }: PdfPageCanvasProps) {
     return () => {
       active = false;
       renderTaskRef.current?.cancel();
+      textLayerRef.current?.cancel();
+      textLayerContainer.replaceChildren();
     };
   }, [document, pageNumber, width]);
 
   return (
     <figure className={styles.page} style={{ width }}>
       <canvas ref={canvasRef} className={styles.canvas} aria-label={`Page ${pageNumber}`} />
+      <div ref={textLayerContainerRef} className={`${styles.textLayer} textLayer`} />
       {status ? <figcaption className={styles.pageStatus}>{status}</figcaption> : null}
     </figure>
   );
